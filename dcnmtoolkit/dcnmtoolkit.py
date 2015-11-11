@@ -7,7 +7,6 @@ class BaseObject(object):
     def get_json(self):
         return json.dumps(self._generate_attributes())
 
-
 class Org(BaseObject):
     def __init__(self, name):
         self.organizationName = name
@@ -90,6 +89,7 @@ class Partition(BaseObject):
             resp.append(obj)
         return resp
 
+
 class Network(BaseObject):
     def __init__(self, name, parent, profile='defaultNetworkEvpnProfile', mobilityDomainId='md0'):
         self.networkName = name
@@ -120,7 +120,7 @@ class Network(BaseObject):
 
     def get_url(self):
         return '/auto-config/organizations/%s/partitions/%s/networks' % (self.organizationName,
-                                                                            self.partitionName)
+                                                                         self.partitionName)
 
     @classmethod
     def get(cls, session, parent):

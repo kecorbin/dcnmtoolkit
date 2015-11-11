@@ -4,6 +4,35 @@ class VXLANBaseObject(object):
     pass
 
 
+class VNI(VXLANBaseObject):
+    def __init__(self):
+        self.status = None
+        self.nve = None
+        self.switchname = None
+        self.mcast = None
+        self.switchid = None
+        self.Vlan = None
+        self.vni = None
+
+
+    @classmethod
+    def _from_json(cls, item):
+        obj = cls()
+        obj.status = item['Vni Status']
+        obj.nve = item['Nve Interface']
+        obj.switchname = item['Switch Name']
+        obj.mcast = item['Multicast Address']
+        obj.switchid = item['Switch id']
+        obj.Vlan = item['Vlan']
+        obj.vni = item['Vni']
+        return obj
+
+    def peers(self, session):
+        url = '/topology/switches/vxlan/peers?switch-id=%s&vni=%s' % (self.switchid, self.vni)
+        resp = session.get(url)
+        return resp.json()
+
+
 class VTEP(VXLANBaseObject):
 
     def __init__(self, ip=None):
@@ -31,10 +60,15 @@ class VTEP(VXLANBaseObject):
         resp = cls._get(session, url)
         return resp
 
-    def vni(self):
-        url =
 
-
+    def get_vnis(self, session):
+        url = '/topology/switches/vxlan?switch-id=%s' % self.switchid
+        resp = []
+        ret = session.get(url)
+        for i in ret.json():
+            obj = VNI._from_json(i)
+            resp.append(obj)
+        return resp
 
     @classmethod
     def _from_json(cls, item):
@@ -43,4 +77,3 @@ class VTEP(VXLANBaseObject):
         obj.nve = item['Nve Interface']
         obj.switchid = item['Switch Id']
         return obj
-
