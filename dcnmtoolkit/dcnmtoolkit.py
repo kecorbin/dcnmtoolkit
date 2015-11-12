@@ -20,17 +20,17 @@ class Org(BaseObject):
         return '/%s' % self.organizationName
 
     def get_parent_url(self):
-        return '/auto-config/organizations'
+        return '/rest/auto-config/organizations'
 
     def get_url(self):
-        return self._get_parent_url() + self._get_url_extension()
+        return self._get_parent_url()
 
     def get_json(self):
         return json.dumps(self._generate_attributes())
 
     @classmethod
     def _get_parent_url(cls):
-        return '/auto-config/organizations'
+        return '/rest/auto-config/organizations'
 
     @classmethod
     def _from_json(cls, item):
@@ -39,7 +39,7 @@ class Org(BaseObject):
 
     @classmethod
     def get(cls, session):
-        url = '/auto-config/organizations?detail=True'
+        url = '/rest/auto-config/organizations?detail=True'
         ret = session.get(url)
         resp = []
         for i in ret.json():
@@ -67,7 +67,7 @@ class Partition(BaseObject):
         return 'partitions/%s' % self.partitionName
 
     def _get_parent_url(self):
-        return '/auto-config/organizations/%s/partitions' % self.organizationName
+        return '/rest/auto-config/organizations/%s/partitions' % self.organizationName
 
     @classmethod
     def _from_json(cls, item, parent):
@@ -77,7 +77,7 @@ class Partition(BaseObject):
         return obj
 
     def get_url(self):
-        return '/auto-config/organizations/%s/partitions/%s' % (self.organizationName, self.partitionName)
+        return '/rest/auto-config/organizations/%s/partitions' % (self.organizationName)
 
     @classmethod
     def get(cls, session, parent):
@@ -115,12 +115,12 @@ class Network(BaseObject):
         return attributes
 
     def get_parent_url(self):
-        return '/auto-config/organizations/%s/partitions/%s/networks' % (self.organizationName,
-                                                                         self.partitionName)
+        return '/rest/auto-config/organizations/%s/partitions/%s/networks' % (self.organizationName,
+                                                                              self.partitionName)
 
     def get_url(self):
-        return '/auto-config/organizations/%s/partitions/%s/networks' % (self.organizationName,
-                                                                         self.partitionName)
+        return '/rest/auto-config/organizations/%s/partitions/%s/networks' % (self.organizationName,
+                                                                              self.partitionName)
 
     @classmethod
     def get(cls, session, parent):
@@ -206,12 +206,12 @@ class Profile(object):
     @classmethod
     def get(cls, session, name = None):
         if name:
-            url = '/auto-config/profiles/%s' % name
+            url = '/rest/auto-config/profiles/%s' % name
             ret = session.get(url)
             obj = cls(attributes=ret.json())
             return obj
         else:
-            url = '/auto-config/profiles?detail=true'
+            url = '/rest/auto-config/profiles?detail=true'
             ret = session.get(url)
             resp = []
             for i in ret.json():

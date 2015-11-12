@@ -42,7 +42,7 @@ class AutoConfigSettings(object):
 
     @classmethod
     def get(cls, session):
-        ret = session.get('/auto-config/settings')
+        ret = session.get('/rest/auto-config/settings')
         obj = cls()
         for k in ret.json().keys():
             setattr(obj, k, ret.json()[k])
@@ -65,7 +65,7 @@ class AutoConfigSettings(object):
 class Session(object):
 
     def __init__(self, url, user, passwd):
-        self.base_url = url + '/rest'
+        self.base_url = url
         self.user = user
         self.passwd = passwd
         self.headers = {'Accept': 'application/json',
@@ -75,7 +75,7 @@ class Session(object):
         self.settings = None
 
     def login(self, load_settings=False):
-        url = self.base_url + '/logon'
+        url = self.base_url + '/rest/logon'
         payload = {'expirationTime': self.expiration_time}
         try:
             resp = requests.post(url, auth=(self.user, self.passwd), data=json.dumps(payload))
@@ -91,20 +91,40 @@ class Session(object):
 
     @property
     def version(self):
-        url = '/dcnm-version'
+        url = '/rest/dcnm-version'
         resp = self.get(url)
         return resp.json()['Dcnm-Version']
 
-    def push_to_dcnm(self, obj):
-        url = self.base_url + obj.get_parent_url()
-        resp = requests.post(url, headers=self.headers, data=obj.get_json())
+    def push_to_dcnm(self, url, data):
+        url = self.base_url + url
+        resp = requests.post(url, headers=self.headers, data=data)
+        print resp.text
 
         if not resp.ok:
-            logging.info('Posting %s to %s' % (obj.get_json(), url))
+            logging.info('Posting %s to %s' % (data, url))
         return resp
+
+    def delete_from_dcnm(self,url):
+        resp = requests.delete(url, headers=self.headers)
+        if not resp.ok:
+            logging.error('Could not delete: Response was %s ' % resp.text)
+        return resp
+
 
     def get(self, url):
         url = self.base_url + url
+        resp = requests.get(url, headers=self.headers)
+        if resp.ok:
+            logging.info('Got %s. Received response: %s' % (url, resp.text))
+        else:
+            logging.error('Cloud not get %s. Received response: %s', url, resp.text)
+        return resp
+
+    def fm_get(self, url):
+        """
+        used for API endpoints under /fmrest
+        """
+        url = self.url + '/fmrest%s' % url
         resp = requests.get(url, headers=self.headers)
         if resp.ok:
             logging.info('Got %s. Received response: %s' % (url, resp.text))

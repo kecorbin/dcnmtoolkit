@@ -123,6 +123,68 @@ class ProfileReadOnlyTests(unittest.TestCase):
                 a = getattr(testprofile, method)
                 a('foo')
 
+class AutoConfigReadWriteTests(unittest.TestCase):
+
+    @property
+    def session(self):
+        session = Session(URL, LOGIN, PASSWORD)
+        res = session.login()
+        return session
+
+    def test_create_org(self):
+        testorg = Org('unittesting')
+        resp = self.session.push_to_dcnm(testorg.get_url(), testorg.get_json())
+        print resp.status_code
+        print resp.ok
+        self.assertTrue(resp.ok)
+
+    def test_create_partition(self):
+        testorg = Org('unittesting')
+        testpartition = Partition('p1', testorg)
+        resp = self.session.push_to_dcnm(testpartition.get_url(), testpartition.get_json())
+        self.assertTrue(resp.ok)
+
+    def test_create_network(self):
+        testorg = Org('unittesting')
+        testpartition = Partition('p1', testorg)
+        n1 = Network('net1', testpartition)
+        n1.segmentId = 333
+        n1.vlanId = n1.segmentId
+        resp = self.session.push_to_dcnm(n1.get_url(), n1.get_json())
+        print resp.text
+    #
+    # def test_delete_network(self):
+    #     testorg = Org('unittesting')
+    #     testpartition = Partition('p1', testorg)
+    #     n1 = Network('net1', testpartition)
+    #     n1.mark_as_deleted()
+    #     resp = self.session.delete_from_dcnm(n1.get_url())
+
+    # orgs
+    ##############
+
+    # orgs = Org.get(dcnm)
+    # print orgs
+    # parts = Partition.get(dcnm, orgs[0])
+    # print parts[0]
+
+    ################
+    # network tests
+    #################
+    # raw = dcnm.get('/rest/auto-config/organizations/test-org/partitions?detail=true')
+    # print raw
+    # print raw.text
+    # nets = Network.get(dcnm, parts[0])
+    # print nets
+    # test = Org('test-org')
+    # p1 = Partition('DMZ', test)
+    # n1 = Network('net1', p1)
+    # n1.segmentId = 2345
+    # n1.vlanId = 2345
+    # print dcnm.push_to_dcnm(n1).text
+
+
+
 
 class CablePlanTests(unittest.TestCase):
 
@@ -135,6 +197,7 @@ class CablePlanTests(unittest.TestCase):
     def test_get_cableplans(self):
         cps = CablePlan.get(self.session)
         print cps
+        self.assertIsInstance(cps, list)
 
 
 class SessionTests(unittest.TestCase):
@@ -150,16 +213,19 @@ class SessionTests(unittest.TestCase):
         print settings
 
 if __name__ == '__main__':
-    live = unittest.TestSuite()
-    live.addTest(LiveTestReadOnly)
-    live.addTest(ProfileReadOnlyTests)
-    live.addTest(CablePlanTests)
-    live.addTest(SessionTests)
+    readonly = unittest.TestSuite()
+    readonly.addTest(LiveTestReadOnly)
+    readonly.addTest(ProfileReadOnlyTests)
+    readonly.addTest(CablePlanTests)
+    readonly.addTest(SessionTests)
+
+    readwrite = unittest.TestSuite()
+    readwrite.addTest(AutoConfigReadWriteTests)
 
     offline = unittest.TestSuite()
     offline.addTest(unittest.makeSuite(OfflineTests))
 
-    full = unittest.TestSuite([live, offline])
+    full = unittest.TestSuite([readonly, readwrite, offline])
 
     # Add tests to this suite while developing the tests
     # This allows only these tests to be run

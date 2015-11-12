@@ -28,7 +28,7 @@ class VNI(VXLANBaseObject):
         return obj
 
     def peers(self, session):
-        url = '/topology/switches/vxlan/peers?switch-id=%s&vni=%s' % (self.switchid, self.vni)
+        url = '/rest/topology/switches/vxlan/peers?switch-id=%s&vni=%s' % (self.switchid, self.vni)
         resp = session.get(url)
         return resp.json()
 
@@ -57,19 +57,19 @@ class VTEP(VXLANBaseObject):
     @classmethod
     def get(cls, session, vni=None, mcast=None):
         if vni:
-            url = '/topology/switches/vxlan?vni=%s' % str(vni)
+            url = '/rest/topology/switches/vxlan?vni=%s' % str(vni)
 
         elif mcast:
-            url = '/topology/switches/vxlan?multicast-address=%s' % mcast
+            url = '/rest/topology/switches/vxlan?multicast-address=%s' % mcast
 
         else:
-            url = '/topology/switches/vxlan/vteps?detail=true'
+            url = '/rest/topology/switches/vxlan/vteps?detail=true'
         resp = cls._get(session, url)
         return resp
 
 
     def get_vnis(self, session):
-        url = '/topology/switches/vxlan?switch-id=%s' % self.switchid
+        url = '/rest/topology/switches/vxlan?switch-id=%s' % self.switchid
         resp = []
         ret = session.get(url)
         for i in ret.json():
