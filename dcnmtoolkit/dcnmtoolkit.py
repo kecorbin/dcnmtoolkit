@@ -136,3 +136,88 @@ class Network(BaseObject):
     def _from_json(cls, item, parent):
         obj = cls(item['networkName'], parent)
         return obj
+
+
+class Profile(object):
+    def __init__(self, attributes=None):
+        if attributes:
+            self.attributes = attributes
+        else:
+            self.attributes['profileSubType'] = None
+            self.attributes['configCommands'] = None
+            self.attributes['profileType'] = None
+            self.attributes['description'] = None
+            self.attributes['profileName'] = None
+            self.attributes['forwardingMode'] = None
+            self.attributes['editable'] = None
+            self.attributes['modifyTimestamp'] = None
+
+    def set_profileSubType(self, val):
+        self.attributes['profileSubType'] = val
+
+    def get_profileSubType(self):
+        return self.attributes['profileSubType']
+
+    def set_configCommands(self, val):
+        self.attributes['configCommands'] = val
+
+    def get_configCommands(self):
+        return self.attributes['configCommands']
+
+    def set_profileType(self, val):
+        self.attributes['profileType'] = val
+
+    def get_profileType(self):
+        return self.attributes['profileType']
+
+    def set_description(self, val):
+        self.attributes['description'] = val
+
+    def get_description(self):
+        return self.attributes['description']
+
+    def set_profileName(self, val):
+        self.attributes['profileName'] = val
+
+    def get_profileName(self):
+        return self.attributes['profileName']
+
+    def set_forwardingMode(self, val):
+        self.attributes['forwardingMode'] = val
+
+    def get_forwardingMode(self):
+        return self.attributes['forwardingMode']
+
+    def set_editable(self, val):
+        self.attributes['editable'] = val
+
+    def get_editable(self):
+        return self.attributes['editable']
+
+    def set_modifyTimestamp(self, val):
+        self.attributes['modifyTimestamp'] = val
+
+    def get_modifyTimestamp(self):
+        return self.attributes['modifyTimestamp']
+
+    def get_json(self):
+        return json.dumps(self.attributes)
+
+    @classmethod
+    def get(cls, session, name = None):
+        if name:
+            url = '/auto-config/profiles/%s' % name
+            ret = session.get(url)
+            obj = cls(attributes=ret.json())
+            return obj
+        else:
+            url = '/auto-config/profiles'
+            ret = session.get(url)
+            resp = []
+            for i in ret.json():
+                obj = cls(attributes=i)
+                resp.append(obj)
+            return resp
+
+    def __str__(self):
+        return self.get_profileName()

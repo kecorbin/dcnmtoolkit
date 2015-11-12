@@ -54,12 +54,11 @@ class AutoConfigSettings(object):
             if i.startswith('_') or i.startswith('get'):
                 pass
             else:
-                if attributes[i] is not None:
-                    attributes[i] = getattr(self, i)
+
+                attributes[i] = getattr(self, i)
         return attributes
 
     def get_json(self):
-        print self._generate_attributes()
         return json.dumps(self._generate_attributes())
 
 
@@ -85,9 +84,6 @@ class Session(object):
             else:
                 logging.error('Could not login to %s: Response: %s' % (url, resp.text))
             self.headers.update(json.loads(resp.text))
-            if load_settings:
-                logging.debug('Settings Option selected, loading')
-                self.settings = AutoConfigSettings.get(self)
             return resp
 
         except requests.exceptions.ConnectionError:
@@ -115,3 +111,14 @@ class Session(object):
         else:
             logging.error('Cloud not get %s. Received response: %s', url, resp.text)
         return resp
+
+    def get_settings(self):
+        obj = AutoConfigSettings.get(self)
+        return obj
+
+    def save_settings(self, obj):
+        if isinstance(obj, AutoConfigSettings):
+            resp = requests.put(self.base_url + '/auto-config/settings', headers=self.headers, data=obj.get_json())
+            return resp
+        else:
+            raise TypeError()
