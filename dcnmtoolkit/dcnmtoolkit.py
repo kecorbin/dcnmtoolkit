@@ -211,7 +211,7 @@ class Profile(object):
             obj = cls(attributes=ret.json())
             return obj
         else:
-            url = '/auto-config/profiles'
+            url = '/auto-config/profiles?detail=true'
             ret = session.get(url)
             resp = []
             for i in ret.json():
