@@ -1,4 +1,6 @@
-from dcnmtoolkit import Session, Org, Partition, Network, VTEP, VNI, Profile, CablePlan, AutoConfigSettings
+from dcnmtoolkit import (Session, Org, Partition, Network, VTEP, VNI, Profile, CablePlan,
+                         AutoConfigSettings, ConfigTemplate, Server, SwitchDefinition)
+
 import unittest
 import json
 
@@ -45,6 +47,10 @@ class OfflineTests(unittest.TestCase):
         org = Org(name='testorg')
         part = Partition('test-partition', org)
         self.assertIsInstance(part, Partition)
+
+    def test_create_profile(self):
+        p = Profile()
+        self.assertIsInstance(p,Profile)
 
 class LiveTestReadOnly(unittest.TestCase):
     def session(self):
@@ -100,8 +106,13 @@ class ProfileReadOnlyTests(unittest.TestCase):
 
     def test_get_profiles(self):
         profiles = Profile.get(self.session)
-        print profiles
         self.assertIsInstance(profiles, list)
+
+    def test_get_profiles_by_name(self):
+        name='vrf-common-evpn'
+        profile= Profile.get(self.session, name=name)
+        print profile.get_profileName()
+        self.assertEqual(str(profile), name)
 
     def test_get_profile_attributes(self):
         profiles = Profile.get(self.session)
@@ -152,41 +163,22 @@ class AutoConfigReadWriteTests(unittest.TestCase):
         n1.vlanId = n1.segmentId
         resp = self.session.push_to_dcnm(n1.get_url(), n1.get_json())
         print resp.text
-    #
-    # def test_delete_network(self):
-    #     testorg = Org('unittesting')
-    #     testpartition = Partition('p1', testorg)
-    #     n1 = Network('net1', testpartition)
-    #     n1.mark_as_deleted()
-    #     resp = self.session.delete_from_dcnm(n1.get_url())
 
-    # orgs
-    ##############
+    def test_get_partitions(self):
+        testorg = Org('unittesting')
+        partitions = Partition.get(self.session, testorg)
+        self.assertIsInstance(partitions, list)
 
-    # orgs = Org.get(dcnm)
-    # print orgs
-    # parts = Partition.get(dcnm, orgs[0])
-    # print parts[0]
-
-    ################
-    # network tests
-    #################
-    # raw = dcnm.get('/rest/auto-config/organizations/test-org/partitions?detail=true')
-    # print raw
-    # print raw.text
-    # nets = Network.get(dcnm, parts[0])
-    # print nets
-    # test = Org('test-org')
-    # p1 = Partition('DMZ', test)
-    # n1 = Network('net1', p1)
-    # n1.segmentId = 2345
-    # n1.vlanId = 2345
-    # print dcnm.push_to_dcnm(n1).text
+    def test_get_networks(self):
+        testorg = Org('unittesting')
+        testpartition = Partition('p1', testorg)
+        nets = Network.get(self.session, testpartition)
+        print nets
+        self.assertIsInstance(nets, list)
 
 
 
-
-class CablePlanTests(unittest.TestCase):
+class ConfigReadOnlyTests(unittest.TestCase):
 
     @property
     def session(self):
@@ -194,10 +186,141 @@ class CablePlanTests(unittest.TestCase):
         res = session.login()
         return session
 
+    def test_get_config_templates(self):
+        templates = ConfigTemplate.get(self.session)
+        print templates
+        self.assertIsInstance(templates, list)
+
+    def test_get_template_by_name(self):
+        template_name = 'IPFabric_VDC_BorderLeaf_v01'
+        template = ConfigTemplate.get(self.session, name=template_name)
+        self.assertEqual(template.get_name(), template_name)
+
+    def test_create_blank_template(self):
+        t = ConfigTemplate()
+        self.assertIsInstance(t, ConfigTemplate)
+
+    def test_get_template_attributes(self):
+        templates = ConfigTemplate.get(self.session)
+        print templates
+        self.assertIsInstance(templates, list)
+        testtemplate = templates[0]
+
+        for method in dir(testtemplate):
+            if method.startswith('get_'):
+                a = getattr(testtemplate, method)
+                a()
+
+    def test_set_template_attributes(self):
+        templates = ConfigTemplate.get(self.session)
+        testtemplate = templates[0]
+
+        for method in dir(testtemplate):
+            if method.startswith('set_'):
+                a = getattr(testtemplate, method)
+                a('foo')
+
+
+class CablePlanReadOnlyTests(unittest.TestCase):
+
+    @property
+    def session(self):
+        session = Session(URL, LOGIN, PASSWORD)
+        res = session.login()
+        return session
+
+    def test_create_cable_plan(self):
+        cp = CablePlan()
+        self.assertIsInstance(cp, CablePlan)
+
     def test_get_cableplans(self):
         cps = CablePlan.get(self.session)
-        print cps
         self.assertIsInstance(cps, list)
+        self.assertIsInstance(cps[0], CablePlan)
+
+
+    def test_get_cableplan_attributes(self):
+        cps = CablePlan.get(self.session)
+        testcp = cps[0]
+
+        for method in dir(testcp):
+            if method.startswith('get_'):
+                a = getattr(testcp, method)
+                a()
+
+    def test_set_cableplan_attributes(self):
+        cps = CablePlan.get(self.session)
+        testcp = cps[0]
+
+        for method in dir(testcp):
+            if method.startswith('set_'):
+                a = getattr(testcp, method)
+                a('foo')
+
+class PoapReadOnlyTests(unittest.TestCase):
+
+    @property
+    def session(self):
+        session = Session(URL, LOGIN, PASSWORD)
+        res = session.login()
+        return session
+
+    def test_create_server(self):
+        server = Server()
+        self.assertIsInstance(server, Server)
+
+    def test_get_servers(self):
+        servers = Server.get(self.session)
+        self.assertIsInstance(servers, list)
+        self.assertIsInstance(servers[0], Server)
+
+
+    def test_get_server_attributes(self):
+        servers = Server.get(self.session)
+        testserver = servers[0]
+
+        for method in dir(testserver):
+            if method.startswith('get_'):
+                a = getattr(testserver, method)
+                a()
+
+    def test_set_server_attributes(self):
+        servers = Server.get(self.session)
+        testserver = servers[0]
+
+        for method in dir(testserver):
+            if method.startswith('set_'):
+                a = getattr(testserver, method)
+                a('foo')
+
+
+    def test_create_switchdef(self):
+        switchdef = SwitchDefinition()
+        self.assertIsInstance(switchdef, SwitchDefinition)
+
+    def test_get_switchdefs(self):
+        defs = SwitchDefinition.get(self.session)
+        self.assertIsInstance(defs, list)
+        self.assertIsInstance(defs[0], SwitchDefinition)
+
+
+    def test_get_switchdef_attributes(self):
+        switchdefs = SwitchDefinition.get(self.session)
+        testdef = switchdefs[0]
+
+        for method in dir(testdef):
+            if method.startswith('get_'):
+                a = getattr(testdef, method)
+                a()
+
+    def test_set_switchdef_attributes(self):
+        switchdefs = SwitchDefinition.get(self.session)
+        testdef = switchdefs[0]
+
+        for method in dir(testdef):
+            if method.startswith('set_'):
+                a = getattr(testdef, method)
+                a('foo')
 
 
 class SessionTests(unittest.TestCase):
@@ -208,16 +331,39 @@ class SessionTests(unittest.TestCase):
         res = session.login()
         return session
 
+    def test_create_blank_autoconfig(self):
+        ac = AutoConfigSettings()
+        self.assertIsInstance(ac, AutoConfigSettings)
+
     def test_get_auto_config_settings(self):
         settings = AutoConfigSettings.get(self.session)
-        print settings
+        self.assertIsInstance(settings, AutoConfigSettings)
+
+    def test_get_autoconfig_attributes(self):
+        settings = AutoConfigSettings.get(self.session)
+
+        for method in dir(settings):
+            if method.startswith('get_'):
+                a = getattr(settings, method)
+                a()
+
+    def test_set_autoconfig_attributes(self):
+        settings = AutoConfigSettings.get(self.session)
+
+        for method in dir(settings):
+            if method.startswith('set_'):
+                a = getattr(settings, method)
+                a('foo')
+
 
 if __name__ == '__main__':
     readonly = unittest.TestSuite()
     readonly.addTest(LiveTestReadOnly)
     readonly.addTest(ProfileReadOnlyTests)
-    readonly.addTest(CablePlanTests)
+    readonly.addTest(CablePlanReadOnlyTests)
     readonly.addTest(SessionTests)
+    readonly.addTest(ConfigReadOnlyTests)
+    readonly.addTest(PoapReadOnlyTests)
 
     readwrite = unittest.TestSuite()
     readwrite.addTest(AutoConfigReadWriteTests)

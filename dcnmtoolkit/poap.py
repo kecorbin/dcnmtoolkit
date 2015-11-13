@@ -5,6 +5,7 @@ class Server(object):
         if attributes:
             self.attributes = attributes
         else:
+            self.attributes = dict()
             self.attributes['userName'] = None
             self.attributes['hostName'] = None
             self.attributes['protocol'] = None
@@ -75,7 +76,7 @@ class Server(object):
 
     @classmethod
     def get(cls, session):
-        url = '/poap/servers'
+        url = '/rest/poap/servers'
         ret = session.get(url)
         resp = []
         for i in ret.json():
@@ -88,6 +89,7 @@ class SwitchDefinition(object):
         if attributes:
             self.attributes = attributes
         else:
+            self.attributes = dict()
             self.attributes['username'] = None
             self.attributes['fmServerIp'] = None
             self.attributes['lastConfigServerUpdateTime'] = None
@@ -312,7 +314,7 @@ class SwitchDefinition(object):
 
     @classmethod
     def get(cls, session):
-        url = '/poap/switch-definitions'
+        url = '/rest/poap/switch-definitions'
         ret = session.get(url)
         resp = []
         for i in ret.json():

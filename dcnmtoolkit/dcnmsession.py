@@ -1,66 +1,9 @@
 import requests
 import json
 import logging
+from autoconfig import AutoConfigSettings
 
 logging.getLogger(__name__)
-
-
-class AutoConfigSettings(object):
-
-    def __init__(self):
-        self.vrfName = None
-        self.isSelectiveHA = None
-        self.useLocalDhcp = None
-        self.ldapPassWord = None
-        self.xmppResponseTimeout = None
-        self.xmppSearch = None
-        self.xmppUserName = None
-        self.dhcpPrimarySubnet = None
-        self.amqpExchangeName = None
-        self.isTopDown = None
-        self.globalAnycastGatewayMAC = None
-        self.isHA = None
-        self.coreDynamicVlans = None
-        self.translateVlans = None
-        self.enableAmqpNotification = None
-        self.xmppGroup = None
-        self.xmppPassWord = None
-        self.globalMobilityDomain = None
-        self.ldapUserName = None
-        self.amqpPort = None
-        self.xmppServer = None
-        self.amqpServer = None
-        self.enableSecureLDAP = None
-        self.systemDynamicVlans = None
-        self.partitionIdRange = None
-        self.selectiveHAFeature = None
-        self.amqpUserName = None
-        self.ldapServer = None
-        self.amqpPassWord = None
-        self.segmentIdRange = None
-        self.amqpVirtualHost = None
-
-    @classmethod
-    def get(cls, session):
-        ret = session.get('/rest/auto-config/settings')
-        obj = cls()
-        for k in ret.json().keys():
-            setattr(obj, k, ret.json()[k])
-        return obj
-
-    def _generate_attributes(self):
-        attributes = {}
-        for i in dir(self):
-            if i.startswith('_') or i.startswith('get'):
-                pass
-            else:
-
-                attributes[i] = getattr(self, i)
-        return attributes
-
-    def get_json(self):
-        return json.dumps(self._generate_attributes())
-
 
 class Session(object):
 

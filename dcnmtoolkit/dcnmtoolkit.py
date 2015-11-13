@@ -15,22 +15,20 @@ class Org(BaseObject):
         attributes = dict()
         attributes['organizationName'] = self.organizationName
         return attributes
+    #
+    # def _get_url_extension(self):
+    #     return '/%s' % self.organizationName
 
-    def _get_url_extension(self):
-        return '/%s' % self.organizationName
-
-    def get_parent_url(self):
-        return '/rest/auto-config/organizations'
 
     def get_url(self):
-        return self._get_parent_url()
+        return '/rest/auto-config/organizations'
 
     def get_json(self):
         return json.dumps(self._generate_attributes())
-
-    @classmethod
-    def _get_parent_url(cls):
-        return '/rest/auto-config/organizations'
+    #
+    # @classmethod
+    # def _get_parent_url(cls):
+    #     return '/rest/auto-config/organizations'
 
     @classmethod
     def _from_json(cls, item):
@@ -63,12 +61,6 @@ class Partition(BaseObject):
         attributes['vrfProfileName'] = self.vrfProfileName
         return attributes
 
-    def _get_url_extenstion(self):
-        return 'partitions/%s' % self.partitionName
-
-    def _get_parent_url(self):
-        return '/rest/auto-config/organizations/%s/partitions' % self.organizationName
-
     @classmethod
     def _from_json(cls, item, parent):
         print item
@@ -81,8 +73,10 @@ class Partition(BaseObject):
 
     @classmethod
     def get(cls, session, parent):
-        url = parent.get_url() + '/partitions?detail=true'
+        url = parent.get_url() + '/%s/partitions?detail=true' % parent.organizationName
         ret = session.get(url)
+        print url
+        print ret.text
         resp = []
         for i in ret.json():
             obj = cls._from_json(i, parent)
@@ -114,26 +108,22 @@ class Network(BaseObject):
 
         return attributes
 
-    def get_parent_url(self):
-        return '/rest/auto-config/organizations/%s/partitions/%s/networks' % (self.organizationName,
-                                                                              self.partitionName)
-
     def get_url(self):
         return '/rest/auto-config/organizations/%s/partitions/%s/networks' % (self.organizationName,
                                                                               self.partitionName)
 
     @classmethod
     def get(cls, session, parent):
-        url = parent.get_url() + '/networks?detail=true'
+        url = parent.get_url() + '/%s/networks?detail=true' % parent.partitionName
         ret = session.get(url)
         resp = []
         for i in ret.json():
-            obj = cls._from_json(i, parent)
+            obj = cls.from_json(i, parent)
             resp.append(obj)
         return resp
 
     @classmethod
-    def _from_json(cls, item, parent):
+    def from_json(cls, item, parent):
         obj = cls(item['networkName'], parent)
         return obj
 
@@ -143,6 +133,7 @@ class Profile(object):
         if attributes:
             self.attributes = attributes
         else:
+            self.attributes = dict()
             self.attributes['profileSubType'] = None
             self.attributes['configCommands'] = None
             self.attributes['profileType'] = None
@@ -204,7 +195,7 @@ class Profile(object):
         return json.dumps(self.attributes)
 
     @classmethod
-    def get(cls, session, name = None):
+    def get(cls, session, name=None):
         if name:
             url = '/rest/auto-config/profiles/%s' % name
             ret = session.get(url)

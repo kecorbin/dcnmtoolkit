@@ -5,6 +5,7 @@ class ConfigTemplate(object):
         if attributes:
             self.attributes = attributes
         else:
+            self.attributes = dict()
             self.attributes['templateType'] = None
             self.attributes['supportedPlatforms'] = None
             self.attributes['description'] = None
@@ -82,7 +83,7 @@ class ConfigTemplate(object):
 
     @classmethod
     def get(cls, session, name=None):
-        url = '/fmrest/config/templates'
+        url = '/fmrest/config/templates?detail=true'
         if name:
             url += '/%s' % name
             ret = session.get(url)
