@@ -22,11 +22,11 @@ _about_exports = [
 
 from .dcnmsession import Session, AutoConfigSettings
 from .cableplan import CablePlan
-from .dcnmtoolkit import Org, Partition, Network, Profile
+from .autoconfig import Org, Partition, Network, Profile, AutoConfigSettings
 from .vxlan import VTEP, VNI
 from .config import ConfigTemplate
 from .poap import Server, SwitchDefinition
-from .autoconfig import AutoConfigSettings
+
 
 import inspect as _inspect
 
