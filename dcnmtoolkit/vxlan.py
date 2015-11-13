@@ -18,13 +18,13 @@ class VNI(VXLANBaseObject):
     @classmethod
     def from_json(cls, item):
         obj = cls()
-        obj.status = item['Vni Status']
-        obj.nve = item['Nve Interface']
-        obj.switchname = item['Switch Name']
-        obj.mcast = item['Multicast Address']
-        obj.switchid = item['Switch id']
-        obj.Vlan = item['Vlan']
-        obj.vni = item['Vni']
+        obj.status = item.get('Vni Status', 'None')
+        obj.nve = item.get('Nve Interface', 'None')
+        obj.switchname = item.get('Switch Name', 'None')
+        obj.mcast = item.get('Multicast Address', 'None')
+        obj.switchid = item.get('Switch id', 'None')
+        obj.Vlan = item.get('Vlan', None)#item['Vlan']
+        obj.vni = item.get('Vni', 'None')
         return obj
 
     def peers(self, session):
@@ -72,6 +72,7 @@ class VTEP(VXLANBaseObject):
         url = '/rest/topology/switches/vxlan?switch-id=%s' % self.switchid
         resp = []
         ret = session.get(url)
+
         for i in ret.json():
             obj = VNI.from_json(i)
             resp.append(obj)

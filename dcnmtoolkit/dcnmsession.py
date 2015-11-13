@@ -42,7 +42,6 @@ class Session(object):
     def push_to_dcnm(self, url, data):
         url = self.base_url + url
         resp = requests.post(url, headers=self.headers, data=data)
-        print resp.text
 
         if not resp.ok:
             logging.info('Posting %s to %s' % (data, url))
@@ -51,6 +50,16 @@ class Session(object):
     def get(self, url):
         url = self.base_url + url
         resp = requests.get(url, headers=self.headers)
+        if resp.ok:
+            logging.info('Got %s. Received response: %s' % (url, resp.text))
+        else:
+            logging.error('Cloud not get %s. Received response: %s', url, resp.text)
+        return resp
+
+
+    def delete(self, url):
+        url = self.base_url + url
+        resp = requests.delete(url, headers=self.headers)
         if resp.ok:
             logging.info('Got %s. Received response: %s' % (url, resp.text))
         else:

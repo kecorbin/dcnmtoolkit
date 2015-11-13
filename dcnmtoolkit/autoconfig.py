@@ -36,6 +36,7 @@ class Org(BaseObject):
         obj = cls(item['organizationName'])
         return obj
 
+
     @classmethod
     def get(cls, session):
         url = '/rest/auto-config/organizations?detail=True'
@@ -46,6 +47,14 @@ class Org(BaseObject):
             resp.append(obj)
         return resp
 
+
+    def save(self, session):
+        resp = session.push_to_dcnm(self.get_url(), self.get_json())
+        return resp
+
+    def delete(self, session):
+        resp = session.delete(self.get_url() + '/%s' % self.organizationName)
+        return resp
 
 class Partition(BaseObject):
     def __init__(self, name, parent, profile='vrf-common-evpn'):
@@ -64,7 +73,6 @@ class Partition(BaseObject):
 
     @classmethod
     def _from_json(cls, item, parent):
-        print item
         obj = cls(item['partitionName'], parent)
 
         return obj
@@ -72,12 +80,20 @@ class Partition(BaseObject):
     def get_url(self):
         return '/rest/auto-config/organizations/%s/partitions' % (self.organizationName)
 
+
+    def save(self, session):
+        resp = session.push_to_dcnm(self.get_url(), self.get_json())
+        return resp
+
+
+    def delete(self, session):
+        resp = session.delete(self.get_url() + '/%s' % (self.partitionName))
+        return resp
+
     @classmethod
     def get(cls, session, parent):
         url = parent.get_url() + '/%s/partitions?detail=true' % parent.organizationName
         ret = session.get(url)
-        print url
-        print ret.text
         resp = []
         for i in ret.json():
             obj = cls._from_json(i, parent)
@@ -95,6 +111,39 @@ class Network(BaseObject):
         self.segmentId = None
         self.profileName = profile
         self.mobilityDomainId = mobilityDomainId
+        self.configargs = ''
+        self.gateway = ''
+        self.netmaskLength = ''
+
+    @property
+    def configArg(self):
+        arg = '$vlanId=%s;' \
+              '$segmentId=%s;' \
+              '$vrfName=%s:%s;'  \
+              '$gatewayIpAddress=%s;'  \
+              '$netMaskLength=%s;'  \
+              '$dhcpServerAddr=;' \
+              '$vrfDhcp=;' \
+              '$gatewayIpv6Address=;' \
+              '$prefixLength=;' \
+              '$mtuValue=;' % (self.vlanId, self.segmentId, self.organizationName, self.partitionName, self.gateway,
+                               self.netmasklength)
+
+              #'$include_vrfSegmentId=50000'
+        return arg
+
+
+    def set_gateway(self, gw):
+        gateway = gw.split('/')[0]
+        self.gateway = gateway
+        mask = gw.split('/')[1]
+        self.netmasklength = mask
+
+    def save(self, session):
+        resp = session.push_to_dcnm(self.get_url(), self.get_json())
+        return resp
+
+
 
     def _generate_attributes(self):
         attributes = dict()
@@ -106,6 +155,9 @@ class Network(BaseObject):
         attributes['segmentId'] = self.segmentId
         attributes['profileName'] = self.profileName
         attributes['mobilityDomainId'] = self.mobilityDomainId
+        attributes['configArg'] = self.configArg
+        attributes['netmaskLength'] = self.netmasklength
+        attributes['gateway'] = self.gateway
 
         return attributes
 
@@ -121,6 +173,16 @@ class Network(BaseObject):
         for i in ret.json():
             obj = cls.from_json(i, parent)
             resp.append(obj)
+        return resp
+
+
+    def save(self, session):
+        resp = session.push_to_dcnm(self.get_url(), self.get_json())
+        return resp
+
+
+    def delete(self, session):
+        resp = session.delete(self.get_url() + '/segment/%s' % (self.segmentId))
         return resp
 
     @classmethod

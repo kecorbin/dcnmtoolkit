@@ -172,36 +172,68 @@ class AutoConfigReadWriteTests(unittest.TestCase):
         res = session.login()
         return session
 
-    def test_create_org(self):
+    def test_001_create_org(self):
         testorg = Org('unittesting')
-        resp = self.session.push_to_dcnm(testorg.get_url(), testorg.get_json())
+        resp = testorg.save(self.session)
         self.assertTrue(resp.ok)
 
-    def test_create_partition(self):
+    def test_002_create_partition(self):
         testorg = Org('unittesting')
         testpartition = Partition('p1', testorg)
-        resp = self.session.push_to_dcnm(testpartition.get_url(), testpartition.get_json())
+        resp = testpartition.save(self.session)
         self.assertTrue(resp.ok)
 
-    def test_create_network(self):
+    def test_003_create_network(self):
         testorg = Org('unittesting')
         testpartition = Partition('p1', testorg)
         n1 = Network('net1', testpartition)
         n1.segmentId = 333
         n1.vlanId = n1.segmentId
-        resp = self.session.push_to_dcnm(n1.get_url(), n1.get_json())
+        n1.set_gateway('10.10.10.2/24')
+        n1.vlanId = '124'
+        n1.segmentId = '124'
+        n1.segmentId = '124'
+        resp = n1.save(self.session)
 
-    def test_get_partitions(self):
+
+
+    def test_004_get_partitions(self):
         testorg = Org('unittesting')
         partitions = Partition.get(self.session, testorg)
         self.assertIsInstance(partitions, list)
 
-    def test_get_networks(self):
+    def test_005_get_networks(self):
         testorg = Org('unittesting')
         testpartition = Partition('p1', testorg)
         nets = Network.get(self.session, testpartition)
         self.assertIsInstance(nets, list)
 
+
+
+
+    def test_006_delete_network(self):
+        testorg = Org('unittesting')
+        testpartition = Partition('p1', testorg)
+        n1 = Network('net1', testpartition)
+        n1.segmentId = 333
+        n1.vlanId = n1.segmentId
+        n1.set_gateway('10.10.10.2/24')
+        n1.vlanId = '124'
+        n1.segmentId = '124'
+        n1.segmentId = '124'
+        resp = n1.delete(self.session)
+
+
+    def test_007_delete_partition(self):
+        testorg = Org('unittesting')
+        testpartition = Partition('p1', testorg)
+        resp = testpartition.delete(self.session)
+        self.assertTrue(resp.ok)
+
+    def test_008_delete_org(self):
+        testorg = Org('unittesting')
+        resp = testorg.delete(self.session)
+        self.assertTrue(resp.ok)
 
 class ConfigReadOnlyTests(unittest.TestCase):
 
@@ -259,6 +291,13 @@ class CablePlanReadOnlyTests(unittest.TestCase):
     def test_get_cableplans(self):
         cps = CablePlan.get(self.session)
         self.assertIsInstance(cps, list)
+        print "Cable Plans Received"
+        for cp in cps:
+            print 'Switch {} port {} connected to switch {} port {}'.format(
+                                                                    cp.attributes['sourceSwitch'],
+                                                                    cp.attributes['sourcePort'],
+                                                                    cp.attributes['destSwitch'],
+                                                                    cp.attributes['destPort'])
         self.assertIsInstance(cps[0], CablePlan)
 
 
@@ -387,6 +426,7 @@ class SessionTests(unittest.TestCase):
     def test_get_version(self):
         session = self.session
         ver = session.version
+        print "DCNM Version is %s" % ver
         self.assertIsInstance(ver, unicode)
 
     def test_get_settings(self):
