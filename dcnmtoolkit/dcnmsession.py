@@ -5,6 +5,7 @@ from autoconfig import AutoConfigSettings
 
 logging.getLogger(__name__)
 
+
 class Session(object):
 
     def __init__(self, url, user, passwd):
@@ -17,7 +18,7 @@ class Session(object):
         self.expiration_time = 1000000
         self.settings = None
 
-    def login(self, load_settings=False):
+    def login(self):
         url = self.base_url + '/rest/logon'
         payload = {'expirationTime': self.expiration_time}
         try:
@@ -47,27 +48,8 @@ class Session(object):
             logging.info('Posting %s to %s' % (data, url))
         return resp
 
-    def delete_from_dcnm(self,url):
-        resp = requests.delete(url, headers=self.headers)
-        if not resp.ok:
-            logging.error('Could not delete: Response was %s ' % resp.text)
-        return resp
-
-
     def get(self, url):
         url = self.base_url + url
-        resp = requests.get(url, headers=self.headers)
-        if resp.ok:
-            logging.info('Got %s. Received response: %s' % (url, resp.text))
-        else:
-            logging.error('Cloud not get %s. Received response: %s', url, resp.text)
-        return resp
-
-    def fm_get(self, url):
-        """
-        used for API endpoints under /fmrest
-        """
-        url = self.url + '/fmrest%s' % url
         resp = requests.get(url, headers=self.headers)
         if resp.ok:
             logging.info('Got %s. Received response: %s' % (url, resp.text))

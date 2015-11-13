@@ -1,5 +1,5 @@
 from dcnmtoolkit import (Session, Org, Partition, Network, VTEP, VNI, Profile, CablePlan,
-                         AutoConfigSettings, ConfigTemplate, Server, SwitchDefinition)
+                         AutoConfigSettings, ConfigTemplate, Server, SwitchDefinition, PoapTemplate)
 
 import unittest
 import json
@@ -111,12 +111,10 @@ class ProfileReadOnlyTests(unittest.TestCase):
     def test_get_profiles_by_name(self):
         name='vrf-common-evpn'
         profile= Profile.get(self.session, name=name)
-        print profile.get_profileName()
         self.assertEqual(str(profile), name)
 
     def test_get_profile_attributes(self):
         profiles = Profile.get(self.session)
-        print profiles
         testprofile = profiles[0]
 
         for method in dir(profiles[0]):
@@ -126,7 +124,6 @@ class ProfileReadOnlyTests(unittest.TestCase):
 
     def test_set_profile_attributes(self):
         profiles = Profile.get(self.session)
-        print profiles
         testprofile = profiles[0]
 
         for method in dir(profiles[0]):
@@ -145,8 +142,6 @@ class AutoConfigReadWriteTests(unittest.TestCase):
     def test_create_org(self):
         testorg = Org('unittesting')
         resp = self.session.push_to_dcnm(testorg.get_url(), testorg.get_json())
-        print resp.status_code
-        print resp.ok
         self.assertTrue(resp.ok)
 
     def test_create_partition(self):
@@ -162,7 +157,6 @@ class AutoConfigReadWriteTests(unittest.TestCase):
         n1.segmentId = 333
         n1.vlanId = n1.segmentId
         resp = self.session.push_to_dcnm(n1.get_url(), n1.get_json())
-        print resp.text
 
     def test_get_partitions(self):
         testorg = Org('unittesting')
@@ -173,7 +167,6 @@ class AutoConfigReadWriteTests(unittest.TestCase):
         testorg = Org('unittesting')
         testpartition = Partition('p1', testorg)
         nets = Network.get(self.session, testpartition)
-        print nets
         self.assertIsInstance(nets, list)
 
 
@@ -188,7 +181,6 @@ class ConfigReadOnlyTests(unittest.TestCase):
 
     def test_get_config_templates(self):
         templates = ConfigTemplate.get(self.session)
-        print templates
         self.assertIsInstance(templates, list)
 
     def test_get_template_by_name(self):
@@ -202,7 +194,6 @@ class ConfigReadOnlyTests(unittest.TestCase):
 
     def test_get_template_attributes(self):
         templates = ConfigTemplate.get(self.session)
-        print templates
         self.assertIsInstance(templates, list)
         testtemplate = templates[0]
 
@@ -323,6 +314,35 @@ class PoapReadOnlyTests(unittest.TestCase):
                 a('foo')
 
 
+    def test_get_poap_templates(self):
+        poaptemplates = PoapTemplate.get(self.session)
+
+        self.assertIsInstance(poaptemplates, list)
+        self.assertIsInstance(poaptemplates[0], PoapTemplate)
+
+    def create_poap_template(self):
+        pt = PoapTemplate()
+
+
+    def test_get_poap_template_attributes(self):
+        testobjs = PoapTemplate.get(self.session)
+        testobj = testobjs[0]
+
+        for method in dir(testobj):
+            if method.startswith('get_'):
+                a = getattr(testobj, method)
+                a()
+
+    def test_set_poap_template_attributes(self):
+        testobjs = PoapTemplate.get(self.session)
+        testobj = testobjs[0]
+
+        for method in dir(testobj):
+            if method.startswith('set_'):
+                a = getattr(testobj, method)
+                a('foo')
+
+
 class SessionTests(unittest.TestCase):
 
     @property
@@ -330,6 +350,20 @@ class SessionTests(unittest.TestCase):
         session = Session(URL, LOGIN, PASSWORD)
         res = session.login()
         return session
+
+    def test_get_version(self):
+        session = self.session
+        ver = session.version
+        self.assertIsInstance(ver, unicode)
+
+    def test_get_settings(self):
+        ac = self.session.get_settings()
+        self.assertIsInstance(ac, AutoConfigSettings)
+
+    def test_bad_url(self):
+        url = '/this/is/bogus'
+        resp = self.session.get(url)
+        self.assertEqual(resp.status_code, 404)
 
     def test_create_blank_autoconfig(self):
         ac = AutoConfigSettings()

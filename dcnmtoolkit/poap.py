@@ -322,3 +322,73 @@ class SwitchDefinition(object):
             resp.append(obj)
         return resp
 
+class PoapTemplate(object):
+    def __init__(self, attributes=None):
+        if attributes:
+            self.attributes = attributes
+        else:
+            self.attributes = dict()
+            self.attributes['templateNVPairs'] = None
+            self.attributes['lastRecordUpdateTime'] = None
+            self.attributes['templateName'] = None
+            self.attributes['version'] = None
+            self.attributes['poapDeviceId'] = None
+            self.attributes['id'] = None
+            self.attributes['templateContent'] = None
+
+    def set_templateNVPairs(self, val):
+        self.attributes['templateNVPairs'] = val
+
+    def get_templateNVPairs(self):
+        return self.attributes['templateNVPairs']
+
+    def set_lastRecordUpdateTime(self, val):
+        self.attributes['lastRecordUpdateTime'] = val
+
+    def get_lastRecordUpdateTime(self):
+        return self.attributes['lastRecordUpdateTime']
+
+    def set_templateName(self, val):
+        self.attributes['templateName'] = val
+
+    def get_templateName(self):
+        return self.attributes['templateName']
+
+    def set_version(self, val):
+        self.attributes['version'] = val
+
+    def get_version(self):
+        return self.attributes['version']
+
+    def set_poapDeviceId(self, val):
+        self.attributes['poapDeviceId'] = val
+
+    def get_poapDeviceId(self):
+        return self.attributes['poapDeviceId']
+
+    def set_id(self, val):
+        self.attributes['id'] = val
+
+    def get_id(self):
+        return self.attributes['id']
+
+    def set_templateContent(self, val):
+        self.attributes['templateContent'] = val
+
+    def get_templateContent(self):
+        return self.attributes['templateContent']
+
+    def get_json(self):
+        return json.dumps(self.attributes)
+
+
+    @classmethod
+    def get(cls, session):
+        url = '/rest/poap/templates?detail=true'
+        ret = session.get(url)
+        resp = []
+        for i in ret.json():
+            obj = cls(attributes=i)
+            resp.append(obj)
+        return resp
+
