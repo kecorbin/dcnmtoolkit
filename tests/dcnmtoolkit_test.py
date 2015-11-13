@@ -71,30 +71,62 @@ class LiveTestReadOnly(unittest.TestCase):
         profiles = Profile.get(self.session())
         self.assertIsInstance(profiles, list)
 
+
+class VXLANReadOnlyTests(unittest.TestCase):
+
+    @property
+    def session(self):
+        session = Session(URL, LOGIN, PASSWORD)
+        res = session.login()
+        return session
+
     def test_get_vteps(self):
-        vteps = VTEP.get(self.session())
+        vteps = VTEP.get(self.session)
         self.assertIsInstance(vteps, list)
         self.assertIsInstance(vteps[0], VTEP)
 
 
     def test_get_vnis_for_switch(self):
-        vteps = VTEP.get(self.session())
+        vteps = VTEP.get(self.session)
         for vtep in vteps:
-            vnis = vtep.get_vnis(self.session())
+            vnis = vtep.get_vnis(self.session)
             self.assertIsInstance(vnis, list)
             has_vni = hasattr(vnis[0], 'vni')
             self.assertTrue(has_vni)
 
     def test_get_vnis_by_vni(self):
-        vnis = VTEP.get(self.session(), vni=TEST_VNI)
+        vnis = VTEP.get(self.session, vni=TEST_VNI)
         has_vni = hasattr(vnis[0], 'vni')
         self.assertTrue(has_vni)
 
     def test_get_vnis_by_mcast(self):
-        vnis = VTEP.get(self.session(), mcast=TEST_MCAST)
+        vnis = VTEP.get(self.session, mcast=TEST_MCAST)
         has_vni = hasattr(vnis[0], 'vni')
         self.assertTrue(has_vni)
         self.assertIsInstance(vnis, list)
+
+    def test_get_vtep_table(self):
+        vteps = VTEP.get(self.session)
+
+        template = "{0:8} {1:10} {2:15} {3:15} {4:15}"
+        for v in vteps:
+            data = []
+            vnis = v.get_vnis(self.session)
+            print "NVE VNI's for switch %s" % vnis[0].switchname
+            print "=" * 80
+            print ""
+            template = "{0:10} {1:10} {2:10} {3:20} {4:10} {5:10} {6:10}"
+            print(template.format("Interface", 'Status', "VNI", "Multicast-Group", "Vlan", "SwitchID","Peers"))
+            print(template.format("-" * 10, "-" * 10, "-"* 10, "-" * 20, "-" * 10, "-" * 10, "-" * 10))
+
+            for v in vnis:
+                data.append((v.nve, v.status, v.vni, v.mcast, v.Vlan, v.switchid, v.peers(self.session)))
+
+            for rec in data:
+                print(template.format(*rec))
+
+            print ""
+
 
 class ProfileReadOnlyTests(unittest.TestCase):
 
@@ -130,6 +162,7 @@ class ProfileReadOnlyTests(unittest.TestCase):
             if method.startswith('set_'):
                 a = getattr(testprofile, method)
                 a('foo')
+
 
 class AutoConfigReadWriteTests(unittest.TestCase):
 
@@ -168,7 +201,6 @@ class AutoConfigReadWriteTests(unittest.TestCase):
         testpartition = Partition('p1', testorg)
         nets = Network.get(self.session, testpartition)
         self.assertIsInstance(nets, list)
-
 
 
 class ConfigReadOnlyTests(unittest.TestCase):
@@ -247,6 +279,7 @@ class CablePlanReadOnlyTests(unittest.TestCase):
             if method.startswith('set_'):
                 a = getattr(testcp, method)
                 a('foo')
+
 
 class PoapReadOnlyTests(unittest.TestCase):
 
@@ -398,7 +431,7 @@ if __name__ == '__main__':
     readonly.addTest(SessionTests)
     readonly.addTest(ConfigReadOnlyTests)
     readonly.addTest(PoapReadOnlyTests)
-
+    readonly.addTest(VXLANReadOnlyTests)
     readwrite = unittest.TestSuite()
     readwrite.addTest(AutoConfigReadWriteTests)
 

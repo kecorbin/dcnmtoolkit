@@ -85,7 +85,8 @@ class ConfigTemplate(object):
     def get(cls, session, name=None):
         url = '/fmrest/config/templates?detail=true'
         if name:
-            url += '/%s' % name
+
+            url = '/fmrest/config/templates/%s?detail=true' % name
             ret = session.get(url)
             obj = cls(attributes=ret.json())
             return obj
