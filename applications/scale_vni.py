@@ -90,5 +90,3 @@ def delete_network(data):
 
 for org in orgs:
     create_network(org)
-
-print dcnm.g1
