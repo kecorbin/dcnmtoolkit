@@ -3,7 +3,7 @@ from dcnmtoolkit import Org, Partition, Network
 from dcnmtoolkit import Session
 
 # Change these
-URL = 'http://10.130.12.108'
+URL = 'http://10.255.176.8'
 LOGIN = 'admin'
 PASSWORD = 'cisco123'
 
