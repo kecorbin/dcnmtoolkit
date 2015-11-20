@@ -24,6 +24,7 @@ If you have git installed, clone the repository
     git clone https://github.com/kecorbin/dcnmtoolkit.git
 
 
+
 ## Installing
 
 After downloading, install using setuptools.
@@ -35,5 +36,10 @@ If you plan on modifying the actual toolkit files, you should install the develo
 
     cd dcnmtoolkit
     python setup.py develop
+
+Alternatively you can install directly via pip
+
+    pip install dcnmtoolkit
+
 
 ack
